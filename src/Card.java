@@ -21,6 +21,7 @@ public class Card
     private String name;
     private String limit;
     private String cardType;
+    private String types[];
     private String description;
     private String pictureURL;
 
@@ -95,7 +96,7 @@ public class Card
             e.printStackTrace();
         }
 
-        this.pictureURL = "C:\\Users\\mlade\\Desktop\\Yu-Gi-Oh! artwork\\" + name + ".png";
+        this.pictureURL = System.getProperty("user.home") + "\\Desktop\\Yu-Gi-Oh! artwork\\" + name + ".png";
 
         File pictureOutput = new File(pictureURL);
 
