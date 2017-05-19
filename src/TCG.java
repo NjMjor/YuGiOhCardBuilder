@@ -1,3 +1,4 @@
+import org.sikuli.basics.Settings;
 import org.sikuli.script.Key;
 import org.sikuli.script.Screen;
 
@@ -7,7 +8,7 @@ import org.sikuli.script.Screen;
 
 enum Icon
 {
-    NONE,
+    NORMAL,
     CONTINOUS,
     COUNTER,
     EQUIP,
@@ -30,36 +31,156 @@ enum Attribute
     WIND
 }
 
-enum Background
-{
-    NORMAL,
-    EFFECT,
-    FUSION,
-    RITUAL,
-    SYNCHRO,
-    DARKSYNCHRO,
-    MONSTERTOKEN,
-    XYZ,
-    SPELL,
-    TRAP,
-    TOKEN
-}
-
 public class TCG
 {
 
-    Screen screen;
+    private Screen screen;
+    private String picturesPath = System.getProperty("user.home")+"\\Desktop\\Pictures\\";
 
     public TCG()
     {
+        Settings.MoveMouseDelay = 0f; // 0 = Instant mouse movement
         screen = new Screen();
     }
 
+    public void generateCard(Card card) throws Exception
+    {
+        if(card.getCardType().equals("Monster"))
+        {
+            generateCardMonster(card);
+        }
+        else if(card.getCardType().equals("Spell") || card.getCardType().equals("Trap"))
+        {
+            generateCardSpellorTrap(card);
+        }
 
-    public void setBackground(String background) throws Exception {
-        screen.click("C:\\Users\\Epl\\Desktop\\Pictures\\Background");
+        renderCard(card.getName());
 
-        goDown(Background.valueOf(background.toUpperCase()).ordinal());
+        screen.click(picturesPath+"Reset Fields");
+    }
+
+    private void generateCardMonster(Card card) throws Exception
+    {
+        setBackgroundMonster(card.getType().toUpperCase());
+
+        setAttribute(card.getAttribute().toUpperCase());
+
+        setTitle(card.getName());
+
+        setArtworkFile(card.getName());
+
+        setDescription(card.getDescription());
+
+        setLevel(card.getLevel());
+
+        setSubTypes(card.getType());
+
+        setAtkDef(card.getAtkDef());
+
+
+        //SKIPS 'Edition', 'Card Set', 'Card Number'
+        goToNextField();
+        goToNextField();
+        goToNextField();
+
+        setLimitation(card.getLimit());
+    }
+
+    private void generateCardSpellorTrap(Card card) throws Exception
+    {
+        setBackgroundSpellorTrap(card.getCardType().toUpperCase());
+
+        goToNextField(); //skips Attribute in TCG
+
+        setTitle(card.getName());
+
+        setArtworkFile(card.getName());
+
+        setDescription(card.getDescription());
+
+        setIcon(card.getProperty());
+
+        setLimitation(card.getLimit());
+    }
+
+    private void setBackgroundSpellorTrap(String background) throws Exception
+    {
+        screen.click(picturesPath+"Background");
+
+        if (background.equals("SPELL"))
+        {
+            goDown(8);
+        }
+        else if (background.equals("TRAP"))
+        {
+            goDown(9);
+        }
+
+        pressEnter();
+        goToNextField();
+    }
+
+    private void setAtkDef(String atkDef) throws Exception
+    {
+        atkDef = atkDef.replaceAll("/","");
+
+        String types[] = atkDef.split("  ");
+
+        screen.paste(types[0]);
+
+        goToNextField();
+
+        screen.paste(types[1]);
+
+        goToNextField();
+    }
+
+    private void setSubTypes(String type) throws Exception
+    {
+        type = type.replaceAll("/","");
+
+        String types[] = type.split("  ");
+
+        for(String s : types)
+        {
+            screen.click(picturesPath+"Add SubType");
+            screen.paste(s);
+        }
+
+        goToNextField();
+    }
+
+    public void setLevel(String level) throws Exception
+    {
+        screen.paste(level);
+    }
+    public void setBackgroundMonster(String background) throws Exception {
+        screen.click(picturesPath+"Background");
+
+        background = background.replaceAll("/","");
+
+        String types[] = background.split("  ");
+
+        boolean ready = false;
+
+        for(int i=0; i<types.length && ready==false; i++)
+        {
+            if (types[i].equals("FUSION"))
+            {
+                goDown(2);
+                ready = true;
+            }
+            else if (types[i].equals("RITUAL"))
+            {
+                goDown(3);
+                ready = true;
+            }
+            else if (types[i].equals("EFFECT"))
+            {
+                goDown(1);
+                ready = true;
+            }
+        }
 
         pressEnter();
         goToNextField();
@@ -75,26 +196,33 @@ public class TCG
 
     public void setTitle(String title) throws Exception
     {
-        screen.type(title);
+        screen.paste(title);
         goToNextField();
         goToNextField();
     }
 
     public void setArtworkFile(String artPath) throws Exception
     {
-        screen.click("C:\\Users\\Epl\\Desktop\\Pictures\\Three Dots.png");
-        screen.click("C:\\Users\\Epl\\Desktop\\Pictures\\Choose Image.png");
-        screen.wait("C:\\Users\\Epl\\Desktop\\Pictures\\Choose Bar.png");
-        screen.type("SwordsOfRevealingLight.png");
-        screen.click("C:\\Users\\Epl\\Desktop\\Pictures\\Open.png");
-        screen.wait("C:\\Users\\Epl\\Desktop\\Pictures\\pictureMenu.png");
-        screen.click("C:\\Users\\Epl\\Desktop\\Pictures\\OK.png");
+        screen.click(picturesPath+"Three Dots");
+
+        screen.click(picturesPath+"Choose Image");
+
+        screen.wait(picturesPath+"Choose Bar");
+
+        screen.paste(artPath+".png");
+
+        screen.click(picturesPath+"Open");
+
+        screen.wait(picturesPath+"pictureMenu");
+
+        screen.click(picturesPath+"OK");
+
         goToNextField();
     }
 
     public void setDescription(String description) throws Exception
     {
-        screen.type(description);
+        screen.paste(description);
         goToNextField();
     }
 
@@ -112,20 +240,20 @@ public class TCG
 
     public void setLimitation(String limitation) throws Exception
     {
-        screen.type(limitation);
+        screen.paste(limitation);
     }
 
 
 
 
-    public void renderCard() throws Exception
+    public void renderCard(String name) throws Exception
     {
-        screen.click("C:\\Users\\Epl\\Desktop\\Pictures\\Render Card.png");
-        screen.wait("C:\\Users\\Epl\\Desktop\\Pictures\\renderCardMenu.png");
-        screen.type("Swords of Revealing Light");
-        screen.click("C:\\Users\\Epl\\Desktop\\Pictures\\renderCardSave.png");
-        screen.wait("C:\\Users\\Epl\\Desktop\\Pictures\\renderCardSettings.png");
-        screen.click("C:\\Users\\Epl\\Desktop\\Pictures\\renderCardOK.png");
+        screen.click(picturesPath+"Render Card");
+        screen.wait(picturesPath+"renderCardMenu");
+        screen.paste(name); //TODO: make this shit more functional
+        screen.click(picturesPath+"renderCardSave");
+        screen.wait(picturesPath+"renderCardSettings");
+        screen.click(picturesPath+"renderCardOK");
     }
 
 

@@ -14,67 +14,139 @@ import java.net.URL;
  * Created by mlade on 16-May-17.
  */
 
-public class Card
-{
+public class Card {
+    String yugiWiki = "http://yugioh.wikia.com/wiki/";
     Document doc; //html document of the card from wikipedia yugioh.wikia.com
 
+
+
+    //Common fields among all card types
     private String name;
-    private String limit;
-    private String cardType;
-    private String types[];
-    private String description;
     private String pictureURL;
+    private String cardType;
+    private String attribute;
+    private String description;
+    private String limit;
 
-    public Card(String name, String pictureURL)
-    {
 
-    }
+    //Fields for Monster cards
+    private String type;
+    private String level;
+    private String atkDef;
 
-    public Card(String name)
-    {
-        this.name = name;
 
-        try
-        {
-            doc = Jsoup.connect("http://yugioh.wikia.com/wiki/"+name).get();
-        } catch (IOException e)
-        {
+    //Fields for Spell or Trap cards
+    private String property;
+
+    public Card(String name) throws Exception {
+        setName(name);
+
+        try {
+            doc = Jsoup.connect(yugiWiki + name).get();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
+        setPictureURL();
+        setName(name);
         setCardType();
         setLimit();
         setDescription();
-        setPictureURL();
 
-        /*
         if(cardType.equals("Monster"))
         {
-            //TODO: Monster Card needs more fields
-            MonsterCard.create(name, limit, cardType, description, doc);
+            setAttribute();
+            setType();
+            setLevel();
+            setAtkDef();
+        }
+        else if(cardType.equals("Spell") || cardType.equals("Trap"))
+        {
+            setProperty();
+        }
+    }
+
+    private void setProperty()
+    {
+        Element element = doc.select("tr[class=cardtablerow] th a[href=/wiki/Property]").get(0).parent().parent().child(1);
+
+        this.property = element.text();
+    }
+
+    private void setName(String name) {
+        this.name = name.replaceAll("_", " ");
+    }
+
+    private void setCardType() {
+        //Gets the html element with specified attributes
+        Element element = doc.select("tr[class=cardtablerow] th a[href=/wiki/Card_type] ").get(0).parent().parent().child(1);
+
+        this.cardType = element.text();
+    }
+
+    private void setAttribute() {
+        //Gets the html element with specified attributes
+        Element element = doc.select("tr[class=cardtablerow] th a[href=/wiki/Attribute] ").get(0).parent().parent().child(1);
+
+        this.attribute = element.text();
+    }
+
+    private void setType() {
+        Element element = doc.select("tr[class=cardtablerow] th a[href=/wiki/Type] ").get(0).parent().parent().child(1);
+
+        this.type = element.text();
+    }
+
+    private void setLevel() {
+        Element element = doc.select("tr[class=cardtablerow] th a[href=/wiki/Level] ").get(0).parent().parent().child(1);
+
+        this.level = element.text();
+    }
+
+    private void setAtkDef()
+    {
+        Element element = doc.select("tr[class=cardtablerow] th a[href=/wiki/Atk] ").get(0).parent().parent().child(1);
+
+        this.atkDef = element.text();
+    }
+
+    private void setLimit()
+    {
+        Elements elements = doc.select("td[class=cardtablerowdata] a[href=/wiki/Limited], " +
+                "td[class=cardtablerowdata] a[href=/wiki/Forbidden], " +
+                "td[class=cardtablerowdata] a[href=/wiki/Unlimited]");
+
+        if(elements.size() == 3)
+        {
+            this.limit = elements.get(1).text(); // 0 is for OCG, 1 is for TCG Advanced, 2 is for TCG Traditional
         }
         else
         {
-            SpellTrapCard.create(name, limit, cardType, description, doc);
+            this.limit = elements.get(0).text();
         }
-        */
     }
 
-    private void setPictureURL()
+
+
+    private void setDescription()
+    {
+        //Gets the html element with specified attributes
+        Element element = doc.select("td[class=navbox-list]").get(0);
+
+        this.description = element.text();
+    }
+
+    private void setPictureURL() throws Exception
     {
         URL picURL = null;
         BufferedImage img = null;
         Document galleryDoc = null;
 
-        String picHTMLAlt = "File:" + name.replaceAll("_|-","") + "-OW.png";
-        try
-        {
-             galleryDoc = Jsoup.connect("http://yugioh.wikia.com/wiki/"+picHTMLAlt).get();
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
+        String picHTMLAlt = "File:" + name.replaceAll(" |-","") + "-OW.png";
+
+
+        galleryDoc = Jsoup.connect(yugiWiki+picHTMLAlt).get();
+
 
         Element pic = galleryDoc.select("img[alt="+picHTMLAlt).first();
 
@@ -96,7 +168,7 @@ public class Card
             e.printStackTrace();
         }
 
-        this.pictureURL = System.getProperty("user.home") + "\\Desktop\\Yu-Gi-Oh! artwork\\" + name + ".png";
+        this.pictureURL = System.getProperty("user.home") + "\\Desktop\\Pictures\\" + name + ".png";
 
         File pictureOutput = new File(pictureURL);
 
@@ -110,27 +182,42 @@ public class Card
         }
     }
 
-    private void setCardType()
-    {
-        //Gets the html element with specified attributes
-        Element element = doc.select("td[class=\"cardtablerowdata\"] a[href][title~=Card]").get(0);
 
-        this.cardType = element.text();
+    public String getName() {
+        return name;
     }
 
-    private void setLimit()
-    {
-        //Gets the html element with specified attributes
-        Element element = doc.select("td[class=\"cardtablerowdata\"][style] a[href][title]").get(0);
-
-        this.limit = element.text();
+    public String getPictureURL() {
+        return pictureURL;
     }
 
-    private void setDescription()
-    {
-        //Gets the html element with specified attributes
-        Element element = doc.select("td[class=navbox-list]").get(0);
-
-        this.description = element.text();
+    public String getCardType() {
+        return cardType;
     }
+
+    public String getAttribute() {
+        return attribute;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getLevel() {
+        return level;
+    }
+
+    public String getAtkDef() {
+        return atkDef;
+    }
+
+    public String getLimit() {
+        return limit;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getProperty() { return property; }
 }
