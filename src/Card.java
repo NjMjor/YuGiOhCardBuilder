@@ -28,7 +28,6 @@ public class Card {
     private String description;
     private String limit;
 
-
     //Fields for Monster cards
     private String type;
     private String level;
@@ -38,14 +37,13 @@ public class Card {
     //Fields for Spell or Trap cards
     private String property;
 
-    public Card(String name) throws Exception {
+    public Card(String name) throws Exception
+    {
         setName(name);
 
-        try {
-            doc = Jsoup.connect(yugiWiki + name).get();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        doc = Jsoup.connect(yugiWiki + name).get();
+
 
         setPictureURL();
         setName(name);
@@ -142,44 +140,51 @@ public class Card {
         BufferedImage img = null;
         Document galleryDoc = null;
 
-        String picHTMLAlt = "File:" + name.replaceAll(" |-","") + "-OW.png";
+
+        String picHTMLAlts[] =
+                {
+                        "File:" + name.replaceAll(" |-","") + "-OW.png",
+                        "File:" + name.replaceAll(" |-","") + "-TF04-JP-VG.png",
+                        "File:" + name.replaceAll(" |-","") + "-TF04-JP-VG.jpg",
+                };
 
 
-        galleryDoc = Jsoup.connect(yugiWiki+picHTMLAlt).get();
+        String picElement = null;
 
 
-        Element pic = galleryDoc.select("img[alt="+picHTMLAlt).first();
-
-        try
+        boolean loop = true;
+        for (int i =0; i<picHTMLAlts.length && loop; ++i)
         {
-            picURL = new URL(pic.attr("src"));
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
+            String picHTMLAlt = picHTMLAlts[i];
+
+            try {
+                galleryDoc = Jsoup.connect(yugiWiki + picHTMLAlt).get();
+            }catch(Exception e){}
+
+            if(galleryDoc != null)
+            {
+                picElement = picHTMLAlt;
+                loop = false;
+            }
         }
 
-        try
-        {
-            img = ImageIO.read(picURL);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+
+
+        Element pic = galleryDoc.select("img[alt="+picElement).first();
+
+
+        picURL = new URL(pic.attr("src"));
+
+
+        img = ImageIO.read(picURL);
+
 
         this.pictureURL = System.getProperty("user.home") + "\\Desktop\\Pictures\\" + name + ".png";
 
         File pictureOutput = new File(pictureURL);
 
-        try
-        {
-            ImageIO.write(img,"png",pictureOutput);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+
+        ImageIO.write(img,"png",pictureOutput);
     }
 
 

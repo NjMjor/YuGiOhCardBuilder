@@ -2,6 +2,10 @@ import org.sikuli.basics.Settings;
 import org.sikuli.script.Key;
 import org.sikuli.script.Screen;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
 /**
  * Created by mlade on 17-May-17.
  */
@@ -40,6 +44,7 @@ public class TCG
     public TCG()
     {
         Settings.MoveMouseDelay = 0f; // 0 = Instant mouse movement
+
         screen = new Screen();
     }
 
@@ -57,6 +62,9 @@ public class TCG
         renderCard(card.getName());
 
         screen.click(picturesPath+"Reset Fields");
+
+        File file = new File(card.getPictureURL());
+        file.delete();
     }
 
     private void generateCardMonster(Card card) throws Exception
@@ -250,7 +258,11 @@ public class TCG
     {
         screen.click(picturesPath+"Render Card");
         screen.wait(picturesPath+"renderCardMenu");
-        screen.paste(name); //TODO: make this shit more functional
+        screen.click(picturesPath+"Card Path");
+        screen.paste(System.getProperty("user.home")+"\\Desktop\\Yu-Gi-Oh! Cards");
+        pressEnter();
+        screen.click(picturesPath+"File Name");
+        screen.paste(name);
         screen.click(picturesPath+"renderCardSave");
         screen.wait(picturesPath+"renderCardSettings");
         screen.click(picturesPath+"renderCardOK");
