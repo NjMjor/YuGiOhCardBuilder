@@ -14,6 +14,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import javax.annotation.Resource;
@@ -68,10 +69,16 @@ public class Main extends Application
 
             Text cardName = new Text();
 
-            if(card.getName().length() > 17) //Reduce the size of the font if there are too many characters in a name
+            int fontSize = 87;
+
+            for(int i=0; i<card.getName().length()-14; i++)
             {
-                cardName.setStyle("-fx-font-size: 70");
+                fontSize -= 1;
             }
+
+
+            cardName.setStyle("-fx-font-size: "+String.valueOf(fontSize));
+
 
             cardName.setText(card.getName());
 
@@ -118,7 +125,8 @@ public class Main extends Application
     {
         Text cardDescription = new Text(card.getDescription().replaceAll(" ","  "));
         cardDescription.setX(75);
-
+        cardDescription.setTextAlignment(TextAlignment.JUSTIFY);
+        cardDescription.setLineSpacing(-1);
         if(card.getCardType().equals("Monster"))
         {
             if (card.getType().contains("Effect") || card.getType().contains("Ritual") || card.getType().contains("Fusion")) {
@@ -126,7 +134,7 @@ public class Main extends Application
             }
 
             cardDescription.setId("card-desc-effect");
-            cardDescription.setY(950);
+            cardDescription.setY(945);
         }
         else //If it's a magic or a trap card, the description has to be higher because there are no types, [dragon] [spellcaster] etc.
         {
@@ -135,6 +143,29 @@ public class Main extends Application
         }
 
         cardDescription.setWrappingWidth(671);
+
+
+        double numberOfLetters = cardDescription.getText().length();
+
+        int fontSize = 0;
+
+        if(card.getCardType().equals("Monster"))
+        {
+            fontSize = 25;
+            if(numberOfLetters > 350)
+                cardDescription.setLineSpacing(-1.5);
+        }
+        else
+        {
+            fontSize = 29;
+        }
+
+        for(int i=0; i<numberOfLetters/100; i++)
+        {
+            fontSize -= 1;
+        }
+
+        cardDescription.setStyle("-fx-font-size: " + String.valueOf(fontSize));
 
         ap.getChildren().add(cardDescription);
     }

@@ -146,6 +146,7 @@ public class Card {
                         "File:" + name.replaceAll(" |-","") + "-OW.png",
                         "File:" + name.replaceAll(" |-","") + "-TF04-JP-VG.png",
                         "File:" + name.replaceAll(" |-","") + "-TF04-JP-VG.jpg",
+                        "File:" + name.replaceAll(" |-","") + "-JP-Anime-DM-NC.png",
                 };
 
 
