@@ -1,0 +1,72 @@
+@font-face{
+    src: url("yugiBold2.ttf");
+}
+
+@font-face{
+    src: url("yugi.ttf");
+
+}
+
+@font-face{
+    src: url("itcstone.ttf");
+}
+
+@font-face{
+     src: url("types.ttf");
+}
+
+@font-face{
+     src: url("NormalMonster.ttf");
+}
+
+@font-face{
+     src: url("atkdef.otf");
+}
+
+
+#card-spell-name{
+    -fx-fill: white;
+    -fx-font-family: "Yu-Gi-Oh! Matrix Small Caps 1";
+    -fx-font-size: 87;
+    -fx-wrap: false;
+}
+
+#card-monster-name{
+    -fx-fill: black;
+    -fx-font-family: "Yu-Gi-Oh! Matrix Small Caps 1";
+    -fx-font-size: 87;
+    -fx-wrap: false;
+}
+
+#card-desc-effect{
+    -fx-fill: black;
+    -fx-font-family: "Yu-Gi-Oh! Matrix Book";
+    -fx-font-size: 25;
+}
+
+#card-attribute{
+    -fx-fill: black;
+    -fx-font-family: "Stone Serif SC ITC TT";
+    -fx-font-size: 45;
+}
+
+#card-types{
+    -fx-font-size: 25;
+    -fx-font-family: "Yu-Gi-Oh!ITCStoneSerifSmallCaps";
+}
+
+#card-types-brackets{
+    -fx-font-weight: bold;
+    -fx-font-size: 30;
+}
+
+#card-desc-normal{
+    -fx-font-family: "Yu-Gi-Oh! StoneSerif LT";
+    -fx-font-size: 25;
+}
+
+#card-atkdef{
+    -fx-font-family: "MatrixBoldFractions";
+    -fx-font-size: 34;
+
+}
