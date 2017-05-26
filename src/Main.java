@@ -19,18 +19,31 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
-import java.io.File;
+import java.io.*;
 
 /**
  * Created by mlade on 16-May-17.
  */
 
+class Preferences implements Serializable
+{
+    public String cardDirectory;
+
+    Preferences(String directory)
+    {
+        this.cardDirectory = directory;
+    }
+
+}
 
 public class Main extends Application
 {
+    private static String cardDirectory;
+
     @FXML
     private TextField cardName;
 
@@ -99,7 +112,7 @@ public class Main extends Application
                         try {
                             generateTemplate(card, ap);
                         } catch (Exception e) {
-
+                            e.printStackTrace();
                         }
 
                         Image cardArtwork = new Image("file:" + System.getProperty("user.home") + "\\Desktop\\Pictures\\" + card.getName() + ".png", 619, 619, false, true);
@@ -115,14 +128,16 @@ public class Main extends Application
                         WritableImage wi = ap.snapshot(null, null);
 
                         //////////////
-                        // SEPARATE THREAD FOR SAVING THE IMAGE, LAG FREE BITCHIZ
+                        // SEPARATE THREAD FOR SAVING THE IMAGE, LAG FREE CASH ME OUSSIDE HOWBOW DAT
                         //////////////
+
                         Task<Void> task = new Task<Void>()
                         {
                             @Override
                             protected Void call() throws Exception
                             {
-                                ImageIO.write(SwingFXUtils.fromFXImage(wi, null), "png", new File(System.getProperty("user.home") + "\\Desktop\\Yu-Gi-Oh! Cards\\" + card.getName() + ".png"));
+
+                                ImageIO.write(SwingFXUtils.fromFXImage(wi, null), "png", new File(cardDirectory+"\\" + card.getName() + ".png"));
 
                                 File file = new File(System.getProperty("user.home") + "\\Desktop\\Pictures\\" + card.getName() + ".png");
                                 file.delete();
@@ -148,17 +163,30 @@ public class Main extends Application
         }
     }
 
-    class SaveThread extends Thread
-    {
-
-    }
-
     @Override public void start(Stage primaryStage) throws Exception
     {
         Parent root = FXMLLoader.load(getClass().getResource("Gui.fxml"));
         primaryStage.setTitle("Yu-Gi-Oh! Card Builder");
         primaryStage.setScene(new Scene(root, 454, 288));
         primaryStage.show();
+
+        Preferences preferences;
+
+        try {
+            FileInputStream fileIn = new FileInputStream("preferences.ser");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+
+            preferences = (Preferences) in.readObject();
+
+            in.close();
+            fileIn.close();
+
+            cardDirectory = preferences.cardDirectory;
+        }
+        catch(Exception e)
+        {
+            cardDirectory = System.getProperty("user.home") + "\\Desktop";
+        }
     }
 
 
@@ -167,13 +195,6 @@ public class Main extends Application
         CardThread ct = new CardThread();
 
         ct.start();
-    }
-
-    private void renderImage(AnchorPane ap, Card card) throws Exception
-    {
-        WritableImage wi = ap.snapshot(null,null);
-
-        ImageIO.write(SwingFXUtils.fromFXImage(wi, null), "png", new File(System.getProperty("user.home")+"\\Desktop\\Yu-Gi-Oh! Cards\\"+card.getName()+".png"));;
     }
 
     private void generateTemplate(Card card, AnchorPane ap) throws Exception
@@ -383,6 +404,27 @@ public class Main extends Application
         ap.getChildren().addAll(types);
     }
 
+    public void chooseDirectory() throws Exception
+    {
+        final DirectoryChooser dc = new DirectoryChooser();
+
+        final File selectedDirectory = dc.showDialog(new Stage());
+
+        if(selectedDirectory != null) {
+            cardDirectory = selectedDirectory.getAbsolutePath();
+
+            FileOutputStream fileOut = new FileOutputStream("preferences.ser");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+
+            Preferences pf = new Preferences(cardDirectory);
+
+             out.writeObject(pf);
+            out.close();
+
+            fileOut.close();
+        }
+    }
+
     public void cardNameClicked()
     {
         cardName.setStyle("-fx-text-fill: black;");
@@ -392,20 +434,5 @@ public class Main extends Application
     public static void main (String args[]) throws Exception
     {
         launch(args);
-
-        //String tcgPath = System.getProperty("user.home") + "\\Desktop\\TCG\\TCGEditor.exe";
-        //Process tcg = Runtime.getRuntime().exec(tcgPath);
     }
-
-
-    /*
-    class CardThread extends Application
-    {
-        @Override
-        public void run()
-        {
-
-        }
-
-    }*/
 }

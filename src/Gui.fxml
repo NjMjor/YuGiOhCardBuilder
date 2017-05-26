@@ -20,10 +20,22 @@
             <Font name="SansSerif Regular" size="18.0" />
          </font>
       </Button>
-      <Text fx:id="tcgMessage" layoutX="121.0" layoutY="35.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-opacity: 0; -fx-fill: red;" text="Make sure the TCG editor is open and you have unobstructed vision on it!" textAlignment="CENTER" wrappingWidth="213.0">
-         <font>
-            <Font name="SansSerif Regular" size="16.0" />
-         </font>
-      </Text>
+      <MenuBar prefHeight="22.0" prefWidth="454.0">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem mnemonicParsing="false" onAction="#chooseDirectory" text="Choose Directory" />
+            </items>
+          </Menu>
+            <Menu mnemonicParsing="false" text="Help">
+              <items>
+                <MenuItem mnemonicParsing="false" text="WutFace" />
+              </items>
+            </Menu>
+        </menus>
+         <padding>
+            <Insets left="-3.0" />
+         </padding>
+      </MenuBar>
    </children>
 </AnchorPane>
