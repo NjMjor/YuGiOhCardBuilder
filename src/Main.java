@@ -1,23 +1,26 @@
 import javafx.application.Application;
+
+import javafx.application.Platform;
+
+import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
+
 import javafx.fxml.FXML;
+
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
-import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import java.io.File;
 
@@ -31,11 +34,124 @@ public class Main extends Application
     @FXML
     private TextField cardName;
 
-    @FXML
-    private Button Confirm;
+    private static boolean  success = false;
 
-    @FXML
-    private Text tcgMessage;
+    class CardThread extends Thread
+    {
+        Card card = null;
+        @Override
+        public void run()
+        {
+            try
+            {
+                card = new Card(cardName.getText());
+                success = true;
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            //UPDATES GUI FROM ANOTHER THREAD AND I DONT GIVE A SHIT HOW IT DOES SO
+            Platform.runLater(new Runnable()
+            {
+                public void run()
+                {
+                    if (success == true) {
+                        Group root2 = new Group();
+
+                        AnchorPane ap = new AnchorPane();
+                        root2.getChildren().add(ap);
+
+                        Text cardName = new Text();
+
+                        int fontSize = 87;
+
+                        for (int i = 0; i < card.getName().length() - 14; i++) {
+                            fontSize -= 1;
+                        }
+
+                        if (card.getName().length() > 28) {
+                            fontSize -= 14;
+                        } else if (card.getName().length() > 25) {
+                            fontSize -= 12;
+                        } else if (card.getName().length() > 22) {
+                            fontSize -= 10;
+                        } else if (card.getName().length() > 20) {
+                            fontSize -= 8;
+                        }
+
+                        cardName.setStyle("-fx-font-size: " + String.valueOf(fontSize));
+
+
+                        cardName.setText(card.getName());
+
+                        if (card.getCardType().equals("Monster")) {
+                            cardName.setId("card-monster-name");
+                        } else {
+                            cardName.setId("card-spell-name");
+                        }
+
+
+                        cardName.setX(75);
+                        cardName.setY(120);
+
+                        try {
+                            generateTemplate(card, ap);
+                        } catch (Exception e) {
+
+                        }
+
+                        Image cardArtwork = new Image("file:" + System.getProperty("user.home") + "\\Desktop\\Pictures\\" + card.getName() + ".png", 619, 619, false, true);
+                        ImageView artwork = new ImageView(cardArtwork);
+
+                        artwork.setX(97);
+                        artwork.setY(217);
+
+                        ap.getChildren().addAll(artwork, cardName);
+
+                        Scene scene = new Scene(root2, 454, 1000);
+                        scene.getStylesheets().add("style.css");
+                        WritableImage wi = ap.snapshot(null, null);
+
+                        //////////////
+                        // SEPARATE THREAD FOR SAVING THE IMAGE, LAG FREE BITCHIZ
+                        //////////////
+                        Task<Void> task = new Task<Void>()
+                        {
+                            @Override
+                            protected Void call() throws Exception
+                            {
+                                ImageIO.write(SwingFXUtils.fromFXImage(wi, null), "png", new File(System.getProperty("user.home") + "\\Desktop\\Yu-Gi-Oh! Cards\\" + card.getName() + ".png"));
+
+                                File file = new File(System.getProperty("user.home") + "\\Desktop\\Pictures\\" + card.getName() + ".png");
+                                file.delete();
+
+                                success = false;
+                                return null;
+                            }
+                        };
+
+                        Thread th = new Thread(task);
+                        th.setDaemon(true);
+                        th.start();
+
+                        //////////////
+                        //////////////
+
+                    } else {
+                        cardName.setText("Error Fetching Data");
+                        cardName.setStyle("-fx-text-fill: red;");
+                    }
+                }
+            });
+        }
+    }
+
+    class SaveThread extends Thread
+    {
+
+    }
 
     @Override public void start(Stage primaryStage) throws Exception
     {
@@ -45,129 +161,12 @@ public class Main extends Application
         primaryStage.show();
     }
 
+
     public void confirmButtonClicked() throws Exception
     {
-        boolean success;
-        Card card = null;
-        try
-        {
-            card = new Card(cardName.getText());
-            success = true;
-        }
+        CardThread ct = new CardThread();
 
-        catch(Exception exc)
-        {
-            success = false;
-        }
-
-        if(success)
-        {
-            Group root2 = new Group();
-
-            AnchorPane ap = new AnchorPane();
-            root2.getChildren().add(ap);
-
-            Text cardName = new Text();
-
-            int fontSize = 87;
-
-            for(int i=0; i<card.getName().length()-14; i++)
-            {
-                fontSize -= 1;
-            }
-
-
-            cardName.setStyle("-fx-font-size: "+String.valueOf(fontSize));
-
-
-            cardName.setText(card.getName());
-
-            if(card.getCardType().equals("Monster"))
-            {
-                cardName.setId("card-monster-name");
-            }
-            else
-            {
-                cardName.setId("card-spell-name");
-            }
-
-
-            cardName.setX(75);
-            cardName.setY(120);
-
-            generateTemplate(card,ap);
-
-            Image cardArtwork = new Image("file:"+System.getProperty("user.home")+"\\Desktop\\Pictures\\"+card.getName()+".png",619,619,false,true);
-            ImageView artwork = new ImageView(cardArtwork);
-
-            artwork.setX(97);
-            artwork.setY(217);
-
-            ap.getChildren().addAll(artwork, cardName);
-
-            Scene scene = new Scene(root2,454,1000);
-            scene.getStylesheets().add("style.css");
-            WritableImage wi = ap.snapshot(null,null);
-
-            ImageIO.write(SwingFXUtils.fromFXImage(wi, null), "png", new File(System.getProperty("user.home")+"\\Desktop\\Yu-Gi-Oh! Cards\\"+card.getName()+".png"));;
-        }
-        else
-        {
-            cardName.setText("Error Fetching Data");
-            cardName.setStyle("-fx-text-fill: red;");
-        }
-
-
-
-    }
-
-    private void generateDescription(Card card, AnchorPane ap)
-    {
-        Text cardDescription = new Text(card.getDescription().replaceAll(" ","  "));
-        cardDescription.setX(75);
-        cardDescription.setTextAlignment(TextAlignment.JUSTIFY);
-        cardDescription.setLineSpacing(-1);
-        if(card.getCardType().equals("Monster"))
-        {
-            if (card.getType().contains("Effect") || card.getType().contains("Ritual") || card.getType().contains("Fusion")) {
-                cardDescription.setId("card-desc-effect");
-            }
-
-            cardDescription.setId("card-desc-effect");
-            cardDescription.setY(945);
-        }
-        else //If it's a magic or a trap card, the description has to be higher because there are no types, [dragon] [spellcaster] etc.
-        {
-            cardDescription.setId("card-desc-effect");
-            cardDescription.setY(918);
-        }
-
-        cardDescription.setWrappingWidth(671);
-
-
-        double numberOfLetters = cardDescription.getText().length();
-
-        int fontSize = 0;
-
-        if(card.getCardType().equals("Monster"))
-        {
-            fontSize = 25;
-            if(numberOfLetters > 350)
-                cardDescription.setLineSpacing(-1.5);
-        }
-        else
-        {
-            fontSize = 29;
-        }
-
-        for(int i=0; i<numberOfLetters/100; i++)
-        {
-            fontSize -= 1;
-        }
-
-        cardDescription.setStyle("-fx-font-size: " + String.valueOf(fontSize));
-
-        ap.getChildren().add(cardDescription);
+        ct.start();
     }
 
     private void renderImage(AnchorPane ap, Card card) throws Exception
@@ -330,6 +329,48 @@ public class Main extends Application
         generateAttribute(card, ap);
     }
 
+    private void generateDescription(Card card, AnchorPane ap) {
+        Text cardDescription = new Text(card.getDescription().replaceAll(" ", "  "));
+        cardDescription.setX(75);
+        cardDescription.setTextAlignment(TextAlignment.JUSTIFY);
+        cardDescription.setLineSpacing(-1);
+        if (card.getCardType().equals("Monster")) {
+            if (card.getType().contains("Effect") || card.getType().contains("Ritual") || card.getType().contains("Fusion")) {
+                cardDescription.setId("card-desc-effect");
+            }
+
+            cardDescription.setId("card-desc-effect");
+            cardDescription.setY(945);
+        } else //If it's a magic or a trap card, the description has to be higher because there are no types, [dragon] [spellcaster] etc.
+        {
+            cardDescription.setId("card-desc-effect");
+            cardDescription.setY(918);
+        }
+
+        cardDescription.setWrappingWidth(671);
+
+
+        double numberOfLetters = cardDescription.getText().length();
+
+        int fontSize = 0;
+
+        if (card.getCardType().equals("Monster")) {
+            fontSize = 25;
+            if (numberOfLetters > 350)
+                cardDescription.setLineSpacing(-1.5);
+        } else {
+            fontSize = 29;
+        }
+
+        for (int i = 0; i < numberOfLetters / 100; i++) {
+            fontSize -= 1;
+        }
+
+        cardDescription.setStyle("-fx-font-size: " + String.valueOf(fontSize));
+
+        ap.getChildren().add(cardDescription);
+    }
+
     private void generateTypes(Card card, AnchorPane ap)
     {
         Text types = new Text("[ "+card.getType()+" ]");
@@ -355,4 +396,16 @@ public class Main extends Application
         //String tcgPath = System.getProperty("user.home") + "\\Desktop\\TCG\\TCGEditor.exe";
         //Process tcg = Runtime.getRuntime().exec(tcgPath);
     }
+
+
+    /*
+    class CardThread extends Application
+    {
+        @Override
+        public void run()
+        {
+
+        }
+
+    }*/
 }
