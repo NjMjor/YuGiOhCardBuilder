@@ -147,6 +147,7 @@ public class Card {
                         "File:" + name.replaceAll(" |-","") + "-TF04-JP-VG.png",
                         "File:" + name.replaceAll(" |-","") + "-TF04-JP-VG.jpg",
                         "File:" + name.replaceAll(" |-","") + "-JP-Anime-DM-NC.png",
+                        "File:" + name.replaceAll(" |-","") + "-TF06-JP-VG.png",
                 };
 
 
@@ -180,7 +181,7 @@ public class Card {
         img = ImageIO.read(picURL);
 
 
-        this.pictureURL = System.getProperty("user.home") + "\\Desktop\\Pictures\\" + name + ".png";
+        this.pictureURL = "Pictures\\" + name + ".png";
 
         File pictureOutput = new File(pictureURL);
 
