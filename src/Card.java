@@ -41,12 +41,11 @@ public class Card {
     {
         setName(name);
 
+        doc = Jsoup.connect(yugiWiki + name.replaceAll(" ","_")).get();
 
-        doc = Jsoup.connect(yugiWiki + name).get();
 
 
         setPictureURL();
-        setName(name);
         setCardType();
         setLimit();
         setDescription();
@@ -141,14 +140,17 @@ public class Card {
         Document galleryDoc = null;
 
 
-        String picHTMLAlts[] =
-                {
-                        "File:" + name.replaceAll(" |-","") + "-OW.png",
-                        "File:" + name.replaceAll(" |-","") + "-TF04-JP-VG.png",
-                        "File:" + name.replaceAll(" |-","") + "-TF04-JP-VG.jpg",
-                        "File:" + name.replaceAll(" |-","") + "-JP-Anime-DM-NC.png",
-                        "File:" + name.replaceAll(" |-","") + "-TF06-JP-VG.png",
-                };
+
+
+
+        String picHTMLAlts[]=
+        {
+                "File:" + name.replaceAll(" |-|'", "") + "-OW.png",
+                "File:" + name.replaceAll(" |-|'", "") + "-TF04-JP-VG.png",
+                "File:" + name.replaceAll(" |-|'", "") + "-TF04-JP-VG.jpg",
+                "File:" + name.replaceAll(" |-|'", "") + "-JP-Anime-DM-NC.png",
+                "File:" + name.replaceAll(" |-|'", "") + "-TF06-JP-VG.png",
+        };
 
 
         String picElement = null;
