@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="jsoup-1.8.1">
+  <library name="sikulixapi">
     <CLASSES>
-      <root url="jar://$USER_HOME$/Desktop/Java/JSoup/jsoup-1.10.2.jar!/" />
+      <root url="jar://$USER_HOME$/Desktop/Java/SikuliX/sikulixapi.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

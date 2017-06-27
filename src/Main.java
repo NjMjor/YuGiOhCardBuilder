@@ -12,7 +12,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.fxml.FXMLLoader;
 
-import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -21,16 +20,19 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.sikuli.script.Key;
+import org.jsoup.Jsoup;
 
 import javax.imageio.ImageIO;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,14 +99,16 @@ public class Main extends Application
                     root2.getChildren().add(ap);
 
                     Text cardName = new Text();
-                    int fontSize = 97;
-
                     cardName.setX(75);
-
+                    int fontSize = 95;
                     double cardY = 120;
 
-                    if(card.getName().length() > 20) { fontSize -= 5;}
-                    for(double i=0; i<card.getName().length() - 17; i+=1)
+                    if(card.getName().length() > 28) fontSize +=2;
+                    for(int i =0 ; i<card.getName().length()-25; i++)
+                    {
+                        fontSize++;
+                    }
+                    for(double i=0; i<card.getName().length() - 14; i+=1)
                     {
                         fontSize -= 3;
                         cardY -= 1;
@@ -128,7 +132,7 @@ public class Main extends Application
                         e.printStackTrace();
                     }
 
-                    Image cardArtwork = new Image("file:"+"Pictures\\"+card.getName() + ".png", 619, 619, false, true);
+                    Image cardArtwork = new Image("file:"+"Pictures\\"+card.getName().replaceAll("/","") + ".png", 619, 619, false, true);
                     ImageView artwork = new ImageView(cardArtwork);
 
                     artwork.setX(97);
@@ -150,9 +154,9 @@ public class Main extends Application
                         protected Void call() throws Exception
                         {
 
-                            ImageIO.write(SwingFXUtils.fromFXImage(wi, null), "png", new File(cardDirectory+"\\" + card.getName() + ".png"));
+                            ImageIO.write(SwingFXUtils.fromFXImage(wi, null), "png", new File(cardDirectory+"\\" + card.getName().replaceAll("/","") + ".png"));
 
-                            File file = new File("Pictures\\"+card.getName() + ".png");
+                            File file = new File("Pictures\\"+card.getName().replaceAll("/","") + ".png");
                             file.delete();
 
                             success = false;
@@ -204,14 +208,6 @@ public class Main extends Application
     }
 
 
-    public void confirmButtonClicked() throws Exception
-    {
-        CardThread ct = new CardThread();
-
-        progressIndicator.setVisible(true);
-        ct.start();
-    }
-
     private void generateTemplate(Card card, AnchorPane ap) throws Exception
     {
         if(card.getCardType().equals("Monster"))
@@ -227,7 +223,7 @@ public class Main extends Application
 
     private void generateSpellTemplate(Card card, AnchorPane ap) throws Exception
     {
-        Image baseTemplate = new Image("file:"+"Pictures\\"+"Spell"+".png");
+        Image baseTemplate = new Image("file:"+"Pictures\\"+"SpellTemplate"+".png");
         ImageView img = new ImageView(baseTemplate);
 
         ImageView txt = new ImageView(); //Equip, Normal, Continuous...
@@ -236,6 +232,11 @@ public class Main extends Application
         if(card.getProperty().equals("Normal")) {
             txt.setImage(new Image("file:"+"Pictures\\"+"NormalSpell"+".png"));
             txt.setX(442);
+        }
+        else if(card.getProperty().equals("Continuous"))
+        {
+            txt.setImage(new Image("file:"+"Pictures\\"+"SpellContinuous"+".png"));
+            txt.setX(400);
         }
         else
         {
@@ -250,7 +251,7 @@ public class Main extends Application
 
     private void generateTrapTemplate(Card card, AnchorPane ap)
     {
-        Image baseTemplate = new Image("file:"+"Pictures\\"+"Trap"+".png");
+        Image baseTemplate = new Image("file:"+"Pictures\\"+"TrapTemplate"+".png");
         ImageView img = new ImageView(baseTemplate);
 
         ImageView txt = new ImageView(); //Equip, Normal, Continuous...
@@ -258,11 +259,22 @@ public class Main extends Application
 
         if(card.getProperty().equals("Normal")) {
             txt.setImage(new Image("file:"+"Pictures\\"+"NormalTrap"+".png"));
-            txt.setX(442);
+            txt.setX(456);
+            txt.setY(161);
+        }
+        else if(card.getProperty().equals("Continuous"))
+        {
+            txt.setImage(new Image("file:"+"Pictures\\"+"TrapContinuous"+".png"));
+            txt.setX(414);
+        }
+        else if(card.getProperty().equals("Counter"))
+        {
+            txt.setImage(new Image("file:"+"Pictures\\"+"Counter"+".png"));
+            txt.setX(414);
         }
         else
         {
-            txt.setX(410);
+            txt.setX(420);
             txt.setImage(new Image("file:"+"Pictures\\"+card.getProperty()+".png"));
         }
 
@@ -336,13 +348,13 @@ public class Main extends Application
     {
        Image baseTemplate;
 
-        if(card.getType().contains("Effect"))
-        {
-            baseTemplate = new Image("file:"+"Pictures\\"+"MonsterEffect"+".png");
-        }
-        else if(card.getType().contains("Fusion"))
+        if(card.getType().contains("Fusion"))
         {
             baseTemplate = new Image("file:"+"Pictures\\"+"MonsterFusion"+".png");
+        }
+        else if(card.getType().contains("Effect"))
+        {
+            baseTemplate = new Image("file:"+"Pictures\\"+"MonsterEffect"+".png");
         }
         else if(card.getType().contains("Ritual"))
         {
@@ -366,44 +378,60 @@ public class Main extends Application
     }
 
     private void generateDescription(Card card, AnchorPane ap) {
-        Text cardDescription = new Text(card.getDescription().replaceAll(" ", "  "));
-        cardDescription.setX(75);
+        Text cardDescription = new Text();
+        cardDescription.setX(77);
         cardDescription.setTextAlignment(TextAlignment.JUSTIFY);
         cardDescription.setLineSpacing(-1);
-        if (card.getCardType().equals("Monster")) {
-            if (card.getType().contains("Effect") || card.getType().contains("Ritual") || card.getType().contains("Fusion")) {
+
+        if (card.getCardType().equals("Monster"))
+        {
+            if (card.getType().contains("Effect") || card.getType().contains("Ritual") || card.getType().contains("Fusion"))
+            {
                 cardDescription.setId("card-desc-effect");
             }
+            else
+            {
+                cardDescription.setId("card-desc-normal");
+            }
 
-            cardDescription.setId("card-desc-effect");
-            cardDescription.setY(945);
-        } else //If it's a magic or a trap card, the description has to be higher because there are no types, [dragon] [spellcaster] etc.
+            cardDescription.setY(948);
+        }
+        else //If it's a magic or a trap card, the description has to be higher because there are no types, [dragon] [spellcaster] etc.
         {
             cardDescription.setId("card-desc-effect");
             cardDescription.setY(918);
         }
 
-        cardDescription.setWrappingWidth(671);
+        cardDescription.setWrappingWidth(660);
 
 
-        double numberOfLetters = cardDescription.getText().length();
-
-        int fontSize = 0;
+        double numberOfLetters = card.getDescription().length();
+        int fontSize;
 
         if (card.getCardType().equals("Monster")) {
             fontSize = 25;
-            if (numberOfLetters > 350)
+            if (numberOfLetters > 250)
+            {
+                fontSize = 23;
                 cardDescription.setLineSpacing(-1.5);
-        } else {
+            }
+            for (double i = 0; i < numberOfLetters / 100; i+=1.2) {
+                fontSize -= 1;
+            }
+        }
+        else
+        {
             fontSize = 29;
+            for (double i = 0; i < numberOfLetters / 100; i+=0.8) {
+                fontSize -= 1;
+            }
         }
 
-        for (int i = 0; i < numberOfLetters / 100; i++) {
-            fontSize -= 1;
-        }
+
 
         cardDescription.setStyle("-fx-font-size: " + String.valueOf(fontSize));
 
+        cardDescription.setText(card.getDescription());
         ap.getChildren().add(cardDescription);
     }
 
@@ -522,11 +550,6 @@ public class Main extends Application
         }
     }
 
-    public static void main (String args[]) throws Exception
-    {
-        launch(args);
-    }
-
     class CardThread2 extends Thread
     {
         String name;
@@ -566,21 +589,22 @@ public class Main extends Application
 
                         Text cardName = new Text();
 
-                        int fontSize = 87;
+                        cardName.setX(75);
+                        int fontSize = 95;
+                        double cardY = 120;
 
-                        for (int i = 0; i < card.getName().length() - 14; i++) {
-                            fontSize -= 1;
+                        if(card.getName().length() > 28) fontSize +=2;
+                        for(int i =0 ; i<card.getName().length()-25; i++)
+                        {
+                            fontSize++;
+                        }
+                        for(double i=0; i<card.getName().length() - 14; i+=1)
+                        {
+                            fontSize -= 3;
+                            cardY -= 1;
                         }
 
-                        if (card.getName().length() > 28) {
-                            fontSize -= 14;
-                        } else if (card.getName().length() > 25) {
-                            fontSize -= 12;
-                        } else if (card.getName().length() > 22) {
-                            fontSize -= 10;
-                        } else if (card.getName().length() > 20) {
-                            fontSize -= 8;
-                        }
+                        cardName.setY(cardY);
 
                         cardName.setStyle("-fx-font-size: " + String.valueOf(fontSize));
 
@@ -603,7 +627,7 @@ public class Main extends Application
                             e.printStackTrace();
                         }
 
-                        Image cardArtwork = new Image("file:"+"Pictures\\"+card.getName() + ".png", 619, 619, false, true);
+                        Image cardArtwork = new Image("file:"+"Pictures\\"+card.getName().replaceAll("/","") + ".png", 619, 619, false, true);
                         ImageView artwork = new ImageView(cardArtwork);
 
                         artwork.setX(97);
@@ -650,5 +674,44 @@ public class Main extends Application
                 }
             });
         }
+    }
+
+    public static String importTCGDeck(String tcgURL) throws Exception
+    {
+        Document doc = Jsoup.connect(tcgURL).get();
+
+        Elements elements = doc.select("td[width=280] a[href]");
+
+        String cardNames = "";
+
+        for(Element element : elements)
+        {
+            cardNames = cardNames + element.text() + "\n";
+        }
+
+        return cardNames;
+    }
+
+    public void confirmButtonClicked() throws Exception
+    {
+        if(cardName.getText().contains("yugioh.tcgplayer"))
+        {
+            String cardNames = importTCGDeck(cardName.getText());
+
+            deckCards.setText(cardNames);
+
+            showTextAreaMenu();
+        }
+        else
+        {
+            CardThread ct = new CardThread();
+            progressIndicator.setVisible(true);
+            ct.start();
+        }
+    }
+
+    public static void main (String args[]) throws Exception
+    {
+        launch(args);
     }
 }

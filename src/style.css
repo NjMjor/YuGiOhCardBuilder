@@ -16,7 +16,7 @@
 }
 
 @font-face{
-     src: url("NormalMonster.ttf");
+     src: url("normal.ttf");
 }
 
 @font-face{
@@ -62,11 +62,11 @@
 
 #card-desc-normal{
     -fx-font-family: "Yu-Gi-Oh! StoneSerif LT";
-    -fx-font-size: 25;
+    -fx-font-size: 55;
+    -fx-font-style: italic;
 }
 
 #card-atkdef{
     -fx-font-family: "MatrixBoldFractions";
     -fx-font-size: 34;
-
 }

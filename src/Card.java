@@ -6,8 +6,6 @@ import org.jsoup.select.Elements;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -145,13 +143,14 @@ public class Card {
 
         String picHTMLAlts[]=
         {
-                "File:" + name.replaceAll(" |-|'", "") + "-OW.png",
-                "File:" + name.replaceAll(" |-|'", "") + "-TF04-JP-VG.png",
-                "File:" + name.replaceAll(" |-|'", "") + "-TF04-JP-VG.jpg",
-                "File:" + name.replaceAll(" |-|'", "") + "-JP-Anime-DM-NC.png",
-                "File:" + name.replaceAll(" |-|'", "") + "-TF06-JP-VG.png",
+                "File:" + name.replaceAll(" |-|'|/|[.]", "") + "-OW.png",
+                "File:" + name.replaceAll(" |-|'|/|[.]", "") + "-TF04-JP-VG.png",
+                "File:" + name.replaceAll(" |-|'|/|[.]", "") + "-TF04-JP-VG.jpg",
+                "File:" + name.replaceAll(" |-|'|/|[.]", "") + "-JP-Anime-DM-NC.png",
+                "File:" + name.replaceAll(" |-|'|/|[.]", "") + "-TF06-JP-VG.png",
+                "File:" + name.replaceAll(" |-|'|/|[.]", "") + "-JP-Anime-AV-NC.png",
+                "File:" + name.replaceAll(" |-|'|/|[.]", "") + "-TF05-JP-VG.png", "File:" + name.replaceAll(" |-|'|/|[.]", "") + "-DAR-EN-VG-Field.png",
         };
-
 
         String picElement = null;
 
@@ -172,8 +171,6 @@ public class Card {
             }
         }
 
-
-
         Element pic = galleryDoc.select("img[alt="+picElement).first();
 
 
@@ -183,7 +180,7 @@ public class Card {
         img = ImageIO.read(picURL);
 
 
-        this.pictureURL = "Pictures\\" + name + ".png";
+        this.pictureURL = "Pictures\\" + name.replaceAll("/","") + ".png";
 
         File pictureOutput = new File(pictureURL);
 
